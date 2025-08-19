@@ -1,61 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="200" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+<p align="center"><a href="https://min.io" target="_blank"><img src="https://cdn.prod.website-files.com/681c8426519d8db8f867c1e8/68656cb290ee4fa91989c2dc_Brand-Logo%20%E2%9C%85.svg" width="200" alt="Minio Logo"></a></p>
 
-## About Laravel
+In this project, I used Minio as AWS s3.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## About Minio
+<p><a href="https://min.io" target="_blank">Minio</a> is an open-source distributed object storage server built in Golang.</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Installing Minio Server
+According to the original installation guide, you can follow the steps. 
+<a href="https://www.min.io/open-source/download?platform=linux&arch=amd64" target="_blank">https://www.min.io/open-source/download?platform=linux&arch=amd64</a>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Here is the ways what I installed on the Linux (Ubuntu). 
+Installing minio server in binary
 
-## Learning Laravel
+```bash
+wget https://dl.min.io/server/minio/release/linux-amd64/minio
+```
+Changing the file to the excutable mode
+```bash 
+chmod +x minio 
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Now we can confirm that Minio server is installed by running.
+```bash 
+./minio --version 
+``` 
+But notice, so that you can run `minio`, you have to locate on the directory that `minio` binary file had. So additionally, I gotta move `minio` to the `/urs/local/bin/` directory so that we can run minio from anywhere. To accomplish this, we need to run 
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash 
+sudo mv minio /usr/local/bin 
+``` 
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Now, calling `minio` on the terminal should work. Just like this
+```bash minio --version ```
 
-## Laravel Sponsors
+Alright, let's start the Minio server
+```bash
+~ » minio server /var/minio --console-address ":9000"
+```
+> It can conflict with the other addresses 
+<p style="color:#fc0324">FATAL Unable to start the server: --console-address cannot be same as --address</p>
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+If that happened, just use other ports.
+```bash
+~ » minio server /var/minio --console-address ":9090"
+```
+No we can create some buckets in minio. For more details check out this article
 
-### Premium Partners
+<a href="https://dev.to/ilyasa1211/laravel-11-use-minio-for-file-storage-as-aws-s3-free-alternative-1bem" target="_blank">https://dev.to/ilyasa1211/laravel-11-use-minio-for-file-storage-as-aws-s3-free-alternative-1bem</a>
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Setting Up
+After following the upper steps and cloning the repo, now we can just need to setup some configuration in Laravel.
 
-## Contributing
+### Install composer package.
+```bash
+composer require league/flysystem-aws-s3-v3 "^3.0" --with-all-dependencies
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### .env
+You can also check in `.env.example`.
+```
+FILESYSTEM_DISK=s3
 
-## Code of Conduct
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+AWS_ACCESS_KEY_ID=minioadmin
+AWS_SECRET_ACCESS_KEY=minioadmin
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=laravel-minio
+AWS_USE_PATH_STYLE_ENDPOINT=true
+AWS_ENDPOINT="http://127.0.0.1:9000"
+AWS_URL="http://127.0.0.1:9000/laravel-minio"
+```
+Then, make sure you defined s3 disk in `config/filesystems.php`
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```php
+'s3' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+            'report' => false,
+        ]
+```
+Now, we can store files on s3 just the way we store files before.Far for more information, check out <a target="_blank" href="https://laravel.com/docs/12.x/filesystem">Laravel's File Storage documentation</a>
